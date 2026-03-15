@@ -1,40 +1,138 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fuel Receipt Wallet</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="manifest" href="manifest.json">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fuel Receipt Wallet</title>
+<link rel="manifest" href="">
+<meta name="theme-color" content="#1e88e5">
+
+<style>
+body { font-family: sans-serif; margin:0; padding:0; background:#f5f5f5; }
+header { background:#1e88e5; color:white; padding:1rem; text-align:center; }
+main { padding:1rem; }
+input, button { display:block; width:100%; padding:0.5rem; margin:0.3rem 0; box-sizing:border-box; }
+button { background:#1e88e5; color:white; border:none; cursor:pointer; }
+button:hover { background:#1565c0; }
+ul { list-style:none; padding:0; }
+li { background:white; margin-bottom:0.5rem; padding:0.5rem; border-radius:4px; box-shadow:0 1px 3px rgba(0,0,0,0.1); }
+#cameraOverlay { position:fixed; top:0; left:0; width:100%; height:100%; background:black; display:none; flex-direction:column; align-items:center; justify-content:center; z-index:9999; }
+#cameraOverlay video { width:100%; height:auto; max-height:100%; object-fit:cover; }
+#captureBtn { position:absolute; bottom:2rem; background:#1e88e5; color:white; padding:1rem 2rem; border:none; font-size:1.2rem; border-radius:5px; }
+</style>
 </head>
 <body>
-  <header>
-    <h1>Fuel Receipt Wallet</h1>
-  </header>
 
-  <main>
-    <section id="add-receipt">
-      <h2>Add Receipt</h2>
-      <button id="scan-barcode">Scan Voucher</button>
-      <video id="camera" width="300" height="200" style="display:none;"></video>
+<header>
+<h1>Fuel Receipt Wallet</h1>
+</header>
 
-      <form id="receipt-form">
-        <input type="text" id="store" placeholder="Store Name" required>
-        <input type="date" id="date" required>
-        <input type="number" id="amount" placeholder="Total Amount" step="0.01" required>
-        <input type="text" id="voucher" placeholder="Voucher Code (optional)">
-        <button type="submit">Add Receipt</button>
-      </form>
-    </section>
+<main>
+<section id="add-receipt">
+<h2>Add Receipt</h2>
+<button id="scan-barcode">Scan Voucher</button>
 
-    <section id="receipt-list">
-      <h2>Receipts</h2>
-      <ul id="receipts"></ul>
-    </section>
-  </main>
+<form id="receipt-form">
+<input type="text" id="store" placeholder="Store Name" required>
+<input type="date" id="date" required>
+<input type="number" id="amount" placeholder="Total Amount" step="0.01" required>
+<input type="text" id="voucher" placeholder="Voucher Code (optional)">
+<button type="submit">Add Receipt</button>
+</form>
+</section>
 
-  <!-- Barcode scanner library -->
-  <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
-  <script src="app.js"></script>
+<section id="receipt-list">
+<h2>Receipts</h2>
+<ul id="receipts"></ul>
+</section>
+</main>
+
+<!-- Camera Overlay -->
+<div id="cameraOverlay">
+  <video id="camera" autoplay playsinline></video>
+  <button id="captureBtn">Capture</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
+<script>
+const form = document.getElementById('receipt-form');
+const receiptsList = document.getElementById('receipts');
+const scanBtn = document.getElementById('scan-barcode');
+const cameraOverlay = document.getElementById('cameraOverlay');
+const video = document.getElementById('camera');
+const captureBtn = document.getElementById('captureBtn');
+
+let receipts = JSON.parse(localStorage.getItem('receipts')) || [];
+renderReceipts();
+
+// Form submission
+form.addEventListener('submit', e => {
+  e.preventDefault();
+  const store = document.getElementById('store').value;
+  const date = document.getElementById('date').value;
+  const amount = parseFloat(document.getElementById('amount').value).toFixed(2);
+  const voucher = document.getElementById('voucher').value;
+
+  receipts.push({ store, date, amount, voucher });
+  localStorage.setItem('receipts', JSON.stringify(receipts));
+  form.reset();
+  renderReceipts();
+});
+
+function renderReceipts() {
+  receiptsList.innerHTML = '';
+  receipts.forEach((r, i) => {
+    const li = document.createElement('li');
+    li.innerHTML = `<strong>${r.store}</strong> - ${r.date} - $${r.amount} ${r.voucher ? '- Voucher: ' + r.voucher : ''} <button onclick="deleteReceipt(${i})">Delete</button>`;
+    receiptsList.appendChild(li);
+  });
+}
+
+function deleteReceipt(i) {
+  receipts.splice(i,1);
+  localStorage.setItem('receipts', JSON.stringify(receipts));
+  renderReceipts();
+}
+
+// ---------------- Full-screen Camera ----------------
+let stream;
+
+scanBtn.addEventListener('click', async () => {
+  cameraOverlay.style.display = 'flex';
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+    video.srcObject = stream;
+  } catch(err) {
+    alert('Camera access denied or not available.');
+    cameraOverlay.style.display = 'none';
+  }
+});
+
+captureBtn.addEventListener('click', () => {
+  const canvas = document.createElement('canvas');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const code = jsQR(imageData.data, canvas.width, canvas.height);
+
+  if(code) {
+    document.getElementById('voucher').value = code.data;
+    alert('Voucher scanned successfully!');
+  } else {
+    alert('No barcode detected. You can try again.');
+  }
+  stopCameraOverlay();
+});
+
+function stopCameraOverlay() {
+  cameraOverlay.style.display = 'none';
+  if(stream){
+    stream.getTracks().forEach(track => track.stop());
+    video.srcObject = null;
+  }
+}
+</script>
 </body>
 </html>
