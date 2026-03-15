@@ -15,9 +15,35 @@ button { background:#1e88e5; color:white; border:none; cursor:pointer; }
 button:hover { background:#1565c0; }
 ul { list-style:none; padding:0; }
 li { background:white; margin-bottom:0.5rem; padding:0.5rem; border-radius:4px; box-shadow:0 1px 3px rgba(0,0,0,0.1); }
-#cameraOverlay { position:fixed; top:0; left:0; width:100%; height:100%; background:black; display:none; flex-direction:column; align-items:center; justify-content:center; z-index:9999; }
-#cameraOverlay video { width:100%; height:auto; max-height:100%; object-fit:cover; }
-#captureBtn { position:absolute; bottom:2rem; background:#1e88e5; color:white; padding:1rem 2rem; border:none; font-size:1.2rem; border-radius:5px; }
+#cameraOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: black;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+#cameraOverlay video {
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+}
+#captureBtn {
+  position: absolute;
+  bottom: 2rem;
+  background: #1e88e5;
+  color: white;
+  padding: 1rem 2rem;
+  border: none;
+  font-size: 1.2rem;
+  border-radius: 5px;
+  z-index: 10000;
+}
 .digital-barcode { margin-top:0.5rem; text-align:center; }
 </style>
 </head>
