@@ -6,14 +6,58 @@
 <title>Smart Fuel Receipt Wallet</title>
 <meta name="theme-color" content="#1e88e5">
 <style>
-body { font-family: sans-serif; margin:0; padding:0; background:#f5f5f5; }
-header { background:#1e88e5; color:white; padding:1rem; text-align:center; }
-main { padding:1rem; }
-input, button { display:block; width:100%; padding:0.5rem; margin:0.3rem 0; box-sizing:border-box; }
-button { background:#1e88e5; color:white; border:none; cursor:pointer; }
-button:hover { background:#1565c0; }
-ul { list-style:none; padding:0; }
-li { background:white; margin-bottom:0.5rem; padding:0.5rem; border-radius:4px; box-shadow:0 1px 3px rgba(0,0,0,0.1); }
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #f5f5f5;
+  font-family: sans-serif;
+}
+
+header {
+  background: #1e88e5;
+  color: white;
+  padding: 1rem;
+  text-align: center;
+}
+
+main {
+  padding: 1rem;
+}
+
+input, button {
+  display: block;
+  width: 100%;
+  padding: 0.5rem;
+  margin: 0.3rem 0;
+  box-sizing: border-box;
+}
+
+button {
+  background: #1e88e5;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #1565c0;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  background: white;
+  margin-bottom: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
 #cameraOverlay {
   position: fixed;
   top: 0;
@@ -27,11 +71,13 @@ li { background:white; margin-bottom:0.5rem; padding:0.5rem; border-radius:4px; 
   justify-content: center;
   z-index: 9999;
 }
+
 #cameraOverlay video {
   width: 100vw;
   height: 100vh;
   object-fit: cover;
 }
+
 #captureBtn {
   position: absolute;
   bottom: 2rem;
@@ -43,6 +89,7 @@ li { background:white; margin-bottom:0.5rem; padding:0.5rem; border-radius:4px; 
   border-radius: 5px;
   z-index: 10000;
 }
+
 .digital-barcode { margin-top:0.5rem; text-align:center; }
 </style>
 </head>
@@ -140,10 +187,8 @@ scanBtn.addEventListener('click', async () => {
     stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
     video.srcObject = stream;
 
-    // Request fullscreen for mobile
+    // Force fullscreen on Android
     if(video.requestFullscreen) video.requestFullscreen();
-    else if(video.webkitRequestFullscreen) video.webkitRequestFullscreen();
-    else if(video.msRequestFullscreen) video.msRequestFullscreen();
 
   } catch(err) {
     alert('Camera access denied or not available.');
@@ -188,8 +233,6 @@ function stopCameraOverlay(){
 
   // Exit fullscreen if active
   if(document.fullscreenElement) document.exitFullscreen();
-  else if(document.webkitFullscreenElement) document.webkitExitFullscreen();
-  else if(document.msFullscreenElement) document.msExitFullscreen();
 }
 </script>
 </body>
