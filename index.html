@@ -3,8 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fuel Receipt Wallet</title>
-<link rel="manifest" href="">
+<title>Smart Fuel Receipt Wallet</title>
 <meta name="theme-color" content="#1e88e5">
 
 <style>
@@ -19,18 +18,19 @@ li { background:white; margin-bottom:0.5rem; padding:0.5rem; border-radius:4px; 
 #cameraOverlay { position:fixed; top:0; left:0; width:100%; height:100%; background:black; display:none; flex-direction:column; align-items:center; justify-content:center; z-index:9999; }
 #cameraOverlay video { width:100%; height:auto; max-height:100%; object-fit:cover; }
 #captureBtn { position:absolute; bottom:2rem; background:#1e88e5; color:white; padding:1rem 2rem; border:none; font-size:1.2rem; border-radius:5px; }
+.digital-barcode { margin-top:0.5rem; text-align:center; }
 </style>
 </head>
 <body>
 
 <header>
-<h1>Fuel Receipt Wallet</h1>
+<h1>Smart Fuel Receipt Wallet</h1>
 </header>
 
 <main>
 <section id="add-receipt">
 <h2>Add Receipt</h2>
-<button id="scan-barcode">Scan Voucher</button>
+<button id="scan-receipt">Scan Receipt</button>
 
 <form id="receipt-form">
 <input type="text" id="store" placeholder="Store Name" required>
@@ -53,11 +53,15 @@ li { background:white; margin-bottom:0.5rem; padding:0.5rem; border-radius:4px; 
   <button id="captureBtn">Capture</button>
 </div>
 
+<!-- Libraries -->
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+
 <script>
 const form = document.getElementById('receipt-form');
 const receiptsList = document.getElementById('receipts');
-const scanBtn = document.getElementById('scan-barcode');
+const scanBtn = document.getElementById('scan-receipt');
 const cameraOverlay = document.getElementById('cameraOverlay');
 const video = document.getElementById('camera');
 const captureBtn = document.getElementById('captureBtn');
@@ -65,7 +69,7 @@ const captureBtn = document.getElementById('captureBtn');
 let receipts = JSON.parse(localStorage.getItem('receipts')) || [];
 renderReceipts();
 
-// Form submission
+// ------------------ Form Submission ------------------
 form.addEventListener('submit', e => {
   e.preventDefault();
   const store = document.getElementById('store').value;
@@ -73,7 +77,8 @@ form.addEventListener('submit', e => {
   const amount = parseFloat(document.getElementById('amount').value).toFixed(2);
   const voucher = document.getElementById('voucher').value;
 
-  receipts.push({ store, date, amount, voucher });
+  const receipt = { store, date, amount, voucher };
+  receipts.push(receipt);
   localStorage.setItem('receipts', JSON.stringify(receipts));
   form.reset();
   renderReceipts();
@@ -83,18 +88,25 @@ function renderReceipts() {
   receiptsList.innerHTML = '';
   receipts.forEach((r, i) => {
     const li = document.createElement('li');
-    li.innerHTML = `<strong>${r.store}</strong> - ${r.date} - $${r.amount} ${r.voucher ? '- Voucher: ' + r.voucher : ''} <button onclick="deleteReceipt(${i})">Delete</button>`;
+    li.innerHTML = `
+      <strong>${r.store}</strong> - ${r.date} - $${r.amount} ${r.voucher ? '- Voucher: ' + r.voucher : ''}
+      <div class="digital-barcode"><svg id="barcode${i}"></svg></div>
+      <button onclick="deleteReceipt(${i})">Delete</button>
+    `;
     receiptsList.appendChild(li);
+    if(r.voucher){
+      JsBarcode(`#barcode${i}`, r.voucher, {format:"CODE128", width:2, height:50, displayValue:true});
+    }
   });
 }
 
-function deleteReceipt(i) {
+function deleteReceipt(i){
   receipts.splice(i,1);
   localStorage.setItem('receipts', JSON.stringify(receipts));
   renderReceipts();
 }
 
-// ---------------- Full-screen Camera ----------------
+// ------------------ Camera + OCR + Barcode ------------------
 let stream;
 
 scanBtn.addEventListener('click', async () => {
@@ -108,29 +120,39 @@ scanBtn.addEventListener('click', async () => {
   }
 });
 
-captureBtn.addEventListener('click', () => {
+captureBtn.addEventListener('click', async () => {
   const canvas = document.createElement('canvas');
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
   const ctx = canvas.getContext('2d');
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  const code = jsQR(imageData.data, canvas.width, canvas.height);
 
-  if(code) {
-    document.getElementById('voucher').value = code.data;
-    alert('Voucher scanned successfully!');
-  } else {
-    alert('No barcode detected. You can try again.');
-  }
+  // 1️⃣ Barcode detection
+  const code = jsQR(imageData.data, canvas.width, canvas.height);
+  if(code) document.getElementById('voucher').value = code.data;
+
+  // 2️⃣ OCR extraction
+  const { data: { text } } = await Tesseract.recognize(canvas, 'eng', { logger: m => console.log(m) });
+
+  // Simple parsing examples
+  const amountMatch = text.match(/\$\s?([\d\.]+)/);
+  const dateMatch = text.match(/(\d{2}[\/\-]\d{2}[\/\-]\d{4})/);
+  const storeMatch = text.split('\n')[0] || '';
+
+  if(amountMatch) document.getElementById('amount').value = parseFloat(amountMatch[1]).toFixed(2);
+  if(dateMatch) document.getElementById('date').value = new Date(dateMatch[1].replace(/-/g,'/')).toISOString().split('T')[0];
+  if(storeMatch) document.getElementById('store').value = storeMatch.trim();
+
+  alert('Receipt scanned. Verify fields and save.');
   stopCameraOverlay();
 });
 
-function stopCameraOverlay() {
-  cameraOverlay.style.display = 'none';
+function stopCameraOverlay(){
+  cameraOverlay.style.display='none';
   if(stream){
-    stream.getTracks().forEach(track => track.stop());
-    video.srcObject = null;
+    stream.getTracks().forEach(track=>track.stop());
+    video.srcObject=null;
   }
 }
 </script>
