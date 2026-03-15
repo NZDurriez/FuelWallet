@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fuel Receipt Wallet</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+</head>
+<body>
+  <header>
+    <h1>Fuel Receipt Wallet</h1>
+  </header>
+
+  <main>
+    <section id="add-receipt">
+      <h2>Add Receipt</h2>
+      <button id="scan-barcode">Scan Voucher</button>
+      <video id="camera" width="300" height="200" style="display:none;"></video>
+
+      <form id="receipt-form">
+        <input type="text" id="store" placeholder="Store Name" required>
+        <input type="date" id="date" required>
+        <input type="number" id="amount" placeholder="Total Amount" step="0.01" required>
+        <input type="text" id="voucher" placeholder="Voucher Code (optional)">
+        <button type="submit">Add Receipt</button>
+      </form>
+    </section>
+
+    <section id="receipt-list">
+      <h2>Receipts</h2>
+      <ul id="receipts"></ul>
+    </section>
+  </main>
+
+  <!-- Barcode scanner library -->
+  <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
