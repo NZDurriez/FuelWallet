@@ -1,23 +1,30 @@
-import { BrowserMultiFormatReader } from 'https://cdn.jsdelivr.net/npm/@zxing/library@0.19.1/esm/index.min.js';
+import { BrowserMultiFormatReader, NotFoundException } from 'https://cdn.jsdelivr.net/npm/@zxing/library@0.19.1/esm/index.min.js';
+import { saveVoucher } from './voucher_service.js';
 
 const scanBtn = document.getElementById("scanBtn");
+const videoElement = document.getElementById("video");
 
 scanBtn.addEventListener("click", async () => {
   try {
     const codeReader = new BrowserMultiFormatReader();
-    const videoInput = await codeReader.listVideoInputDevices();
-    if (!videoInput.length) throw new Error("No camera found");
-    
-    const selectedDeviceId = videoInput[0].deviceId;
+    const devices = await codeReader.listVideoInputDevices();
+    if (!devices.length) throw new Error("No camera found");
 
-    const result = await codeReader.decodeOnceFromVideoDevice(selectedDeviceId, 'body');
-    if (result) {
-      const store = prompt("Enter store name for scanned voucher:");
-      const expiry = prompt("Enter expiry date (optional):");
-      saveVoucher({ store, code: result.text, expiry });
-    }
+    const deviceId = devices[0].deviceId;
+
+    codeReader.decodeFromVideoDevice(deviceId, videoElement, (result, err) => {
+      if (result) {
+        codeReader.reset(); // stop scanning
+        alert(`Voucher scanned: ${result.text}`);
+        saveVoucher({ store: "Unknown", code: result.text });
+      }
+      if (err && !(err instanceof NotFoundException)) {
+        console.error(err);
+      }
+    });
+
   } catch (err) {
-    alert("Barcode scan failed, please add manually.");
-    addManualVoucher();
+    alert("Unable to access camera. Make sure you allow camera access.");
+    console.error(err);
   }
 });
