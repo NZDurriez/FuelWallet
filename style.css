@@ -61,7 +61,11 @@ ul {
   padding: 0;
 }
 
-li {
-  padding: 0.5rem;
-  border-bottom: 1px solid #ccc;
+.voucher-card {
+  background-color: white;
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  font-size: 0.9rem;
 }
