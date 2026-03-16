@@ -17,13 +17,4 @@ function renderVouchers() {
   });
 }
 
-function addManualVoucher() {
-  const store = prompt("Enter store name:");
-  const code = prompt("Enter voucher code:");
-  const expiry = prompt("Enter expiry date (optional):");
-  if (store && code) saveVoucher({ store, code, expiry });
-}
-
-document.getElementById("manualBtn").addEventListener("click", addManualVoucher);
-
 renderVouchers();
