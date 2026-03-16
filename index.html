@@ -1,25 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Fuel Wallet</title>
-<link rel="manifest" href="manifest.json">
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fuel Wallet v5</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
 </head>
 <body>
+  <header>
+    <h1>Fuel Wallet v5</h1>
+  </header>
 
-<header>
-<h1>Fuel Wallet</h1>
-</header>
+  <main>
+    <button id="scanBtn">Scan Voucher</button>
+    <button id="manualBtn">Add Manually</button>
 
-<main>
-<button id="scanBtn">Scan Voucher</button>
-<div id="wallet"></div>
-</main>
+    <ul id="voucherList"></ul>
+  </main>
 
-<script src="db.js"></script>
-<script src="app.js"></script>
-
+  <script src="voucher_service.js"></script>
+  <script src="scanner.js"></script>
 </body>
 </html>
