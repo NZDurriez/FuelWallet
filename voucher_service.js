@@ -10,7 +10,7 @@ function saveVoucher(voucher) {
 function renderVouchers() {
   const vouchers = JSON.parse(localStorage.getItem("vouchers") || "[]");
   voucherList.innerHTML = "";
-  vouchers.forEach((v, idx) => {
+  vouchers.forEach(v => {
     const li = document.createElement("li");
     li.textContent = `${v.store}: ${v.code} (Expires: ${v.expiry || 'N/A'})`;
     voucherList.appendChild(li);
