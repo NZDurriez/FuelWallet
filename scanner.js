@@ -11,7 +11,6 @@ scanBtn.addEventListener("click", async () => {
     codeReader.decodeFromVideoDevice(deviceId, videoElement, (result, err) => {
       if (result) {
         codeReader.reset(); // stop scanning
-        alert(`Voucher scanned: ${result.text}`);
         saveVoucher({ store: "Unknown", code: result.text });
       }
       if (err && !(err instanceof ZXing.NotFoundException)) {
