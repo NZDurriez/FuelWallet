@@ -7,7 +7,6 @@ async function loadVouchers(){
   wallet.innerHTML="";
   const vouchers=await db.getAll();
   
-  // Sort by expiry
   vouchers.sort((a,b)=> new Date(a.expiry)-new Date(b.expiry));
   
   vouchers.forEach(v=>{
