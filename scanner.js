@@ -1,53 +1,23 @@
-const video=document.getElementById("camera");
-const statusText=document.getElementById("statusText");
-let stream;
+import { BrowserMultiFormatReader } from 'https://cdn.jsdelivr.net/npm/@zxing/library@0.19.1/esm/index.min.js';
 
-async function startCamera(){
-  stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
-  video.srcObject=stream;
-  scanLoop();
-}
+const scanBtn = document.getElementById("scanBtn");
 
-startCamera();
-
-async function scanLoop(){
-  const canvas=document.createElement("canvas");
-  canvas.width=video.videoWidth;
-  canvas.height=video.videoHeight;
-  const ctx=canvas.getContext("2d");
-  
-  const scanInterval=setInterval(async()=>{
-    ctx.drawImage(video,0,0,canvas.width,canvas.height);
-    const imageData=ctx.getImageData(0,0,canvas.width,canvas.height);
+scanBtn.addEventListener("click", async () => {
+  try {
+    const codeReader = new BrowserMultiFormatReader();
+    const videoInput = await codeReader.listVideoInputDevices();
+    if (!videoInput.length) throw new Error("No camera found");
     
-    try{
-      const code=ZXing.BrowserBarcodeReader().decodeFromImage(imageData);
-      if(code){
-        statusText.innerText="Barcode detected!";
-        clearInterval(scanInterval);
-        await saveVoucher(code.text,canvas.toDataURL("image/jpeg"));
-      }
-    }catch(e){}
-  },500);
-}
+    const selectedDeviceId = videoInput[0].deviceId;
 
-async function saveVoucher(barcodeValue,image){
-  const { data:{text} }=await Tesseract.recognize(image,'eng',{logger:m=>console.log(m)});
-  
-  let store=text.split("\n")[0]||"Unknown Store";
-  let amountMatch=text.match(/\$\s?(\d+(\.\d{1,2})?)/);
-  let dateMatch=text.match(/(\d{2}[\/\-]\d{2}[\/\-]\d{4})/);
-  
-  const voucher={
-    id:Date.now().toString(),
-    store:store.trim(),
-    amount:amountMatch?parseFloat(amountMatch[1]).toFixed(2):"0",
-    expiry:dateMatch?new Date(dateMatch[1].replace(/-/g,'/')).toISOString().split("T")[0]:"Unknown",
-    barcode:barcodeValue,
-    photo:image
-  };
-  
-  await db.save(voucher);
-  stream.getTracks().forEach(t=>t.stop());
-  window.location="index.html";
-}
+    const result = await codeReader.decodeOnceFromVideoDevice(selectedDeviceId, 'body');
+    if (result) {
+      const store = prompt("Enter store name for scanned voucher:");
+      const expiry = prompt("Enter expiry date (optional):");
+      saveVoucher({ store, code: result.text, expiry });
+    }
+  } catch (err) {
+    alert("Barcode scan failed, please add manually.");
+    addManualVoucher();
+  }
+});
