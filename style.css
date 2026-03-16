@@ -1,108 +1,37 @@
-body{
-  margin:0;
-  font-family:Arial, Helvetica, sans-serif;
-  background:#f5f5f5;
+body {
+  font-family: sans-serif;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
-header{
-  background:#1e88e5;
-  color:white;
-  padding:15px;
-  text-align:center;
+header {
+  background-color: #2c3e50;
+  color: white;
+  padding: 1rem;
+  text-align: center;
 }
 
-main{
-  padding:20px;
+main {
+  flex: 1;
+  padding: 1rem;
 }
 
-button{
-  padding:14px;
-  border:none;
-  border-radius:10px;
-  background:#1e88e5;
-  color:white;
-  font-size:16px;
-  margin-bottom:20px;
-  width:100%;
-  cursor:pointer;
+button {
+  padding: 1rem;
+  margin: 0.5rem 0;
+  width: 100%;
+  font-size: 1rem;
 }
 
-#wallet{
-  display:flex;
-  flex-direction:column;
-  gap:15px;
+ul {
+  list-style: none;
+  padding: 0;
 }
 
-.card{
-  background:white;
-  border-radius:15px;
-  padding:20px;
-  box-shadow:0 6px 12px rgba(0,0,0,0.15);
-}
-
-.cardTitle{
-  font-weight:bold;
-  font-size:18px;
-  margin-bottom:10px;
-}
-
-.cardAmount{
-  font-size:26px;
-  font-weight:bold;
-  margin-bottom:10px;
-}
-
-.cardBarcode{
-  margin-top:15px;
-  text-align:center;
-}
-
-.scannerPage{
-  background:black;
-  margin:0;
-}
-
-#camera{
-  position:fixed;
-  top:0;
-  left:0;
-  width:100vw;
-  height:100vh;
-  object-fit:cover;
-}
-
-.scannerOverlay{
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  pointer-events:none;
-}
-
-.guideBox{
-  border:4px solid white;
-  width:80%;
-  height:40%;
-  border-radius:20px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-
-.guideText, .statusText{
-  color:white;
-  font-size:18px;
-  text-align:center;
-}
-
-#captureBtn{
-  position:absolute;
-  bottom:40px;
-  pointer-events:auto;
-  width:200px;
+li {
+  padding: 0.5rem;
+  border-bottom: 1px solid #ccc;
 }
